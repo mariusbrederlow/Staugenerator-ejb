@@ -8,7 +8,7 @@ import DTO.KanteDTO;
 import entities.Kante;
 import entities.Knoten;
 import interfaces.IStauService;
-import java.util.List;
+import java.util.logging.Logger;
 import javax.annotation.security.PermitAll;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
@@ -25,11 +25,11 @@ import javax.ejb.Stateless;
 public class StauService implements IStauService{
 
     @EJB
-    private KanteDTO dto;
-    private List kanten;
+    private KanteDTO dto;    
     private Kante qkante;
     private Kante zkante;
-    
+    static final int MAX_STAULAENGE = 10;
+    static final Logger logger = Logger.getLogger("logger");
     
     
     public int generiereRandomInt(int anzahl){
@@ -41,45 +41,35 @@ public class StauService implements IStauService{
     @Override
     @Schedule(minute = "0/1", hour = "*", persistent=false)
     public void generiereStau(){
-        System.out.println("STAU");
-        int anzahlKanten;
-        int updateKanten = (int) (Math.random()*10)+1;; 
+        logger.info("<< Starte Staugenerierung >>");
+        
+        int anzahlKanten = dto.getKantenAnzahl();
+        int updateKanten = (int) (Math.random()*anzahlKanten)+1;
         Knoten k;
         
         int kante_id;
         int quellid;
         int i;
         
-        System.out.println("Anzahl der Durchlaeufe " + updateKanten);
-        for(i=1;i<updateKanten;i++){
-        int stauLaenge = (int) (Math.random()*10)+1;
-        anzahlKanten = dto.getKantenAnzahl();
+        logger.info("Generiere Stau auf " + updateKanten + " Kanten von insgesamt " + anzahlKanten + " Kanten");
+        for(i=0;i<updateKanten;i++){
         
-        
-        
-        
-        kante_id = generiereRandomInt(anzahlKanten);
-        
+        int stauLaenge = (int) (Math.random()*MAX_STAULAENGE)+1;
+
+        kante_id = generiereRandomInt(anzahlKanten);       
         qkante = dto.getKanteById(kante_id);
-        System.out.println("Wähle Kante " + qkante.getId());
-        
         quellid = qkante.getKnotenid().getId();
-       
-        
         k = dto.getKnotenByID(qkante.getZielknotenid());
-        System.out.println("Ziel der Kante Knoten" + k.getId());
-        System.out.println("Ziel der Kante Quellid" + quellid);
+        
+        logger.info("Waehle Kante von " + qkante.getKnotenid().getName() + " nach " + k.getName());
         
         zkante = dto.getKantebyIdZiel(k,quellid);
         
        qkante.setGewicht(stauLaenge);
        zkante.setGewicht(stauLaenge); 
-       
+       logger.info("Verzoegerung ist " + (qkante.getGewicht()+qkante.getMinProKM()) + " Minuten pro 10 Km");
        dto.persistKante(qkante);
-       dto.persistKante(zkante);
-        
-        
-       
+       dto.persistKante(zkante);       
         }  
     }
     

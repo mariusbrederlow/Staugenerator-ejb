@@ -21,8 +21,7 @@ import javax.persistence.PersistenceContext;
 public class KanteDTO {
 
     @PersistenceContext
-    private EntityManager em;
-    private List kanten;
+    private EntityManager em;    
     private int anzahl;
 
     
@@ -34,26 +33,14 @@ public class KanteDTO {
         return (Knoten) em.createNamedQuery("Knoten.findById").setParameter("id", id).getSingleResult();
     }
     
-    public Kante getKantebyIdZiel(Knoten k, int ziel){
-        System.out.println(k.getId());
-        System.out.println(ziel);
+    public Kante getKantebyIdZiel(Knoten k, int ziel){      
         return (Kante) em.createNamedQuery("Kante.findByIdmitZiel").setParameter("k", k).setParameter("ziel", ziel).getSingleResult();
     }
     
-    public Kante getKanteById(int id){
-        
+    public Kante getKanteById(int id){        
       return (Kante) em.createNamedQuery("Kante.findById").setParameter("id", id).getSingleResult();
     }
-    
-    
-    public List getKantenpaare(int id, int zielid){
-        
-        kanten = em.createNamedQuery("Kante.findeKantenpaare").setParameter("id", id).setParameter("zielid", zielid).getResultList();
-        
-        return kanten;
-        
-    }
-    
+          
     public int getKantenAnzahl(){
       
         anzahl = em.createNamedQuery("Kante.findAll").getResultList().size();
